@@ -24,7 +24,7 @@
 
 ext=$1
 if [ -z "$1" ]; then 
-  echo "redimg <extension>, use jpg by default"
+  echo "The extension wasn't defined, using jpg by default"
   ext="jpg"
 fi
 mkdir reduce
