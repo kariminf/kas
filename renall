@@ -1,0 +1,52 @@
+#!/bin/sh 
+
+# ***** RenameAll
+# This script helps to rename some files of the same extension,
+# with sequantial numbers 
+# Use: renall <ext> <wide>
+# <ext>: The extension, like mp3, jpg, doc, avi, etc.
+# <wide>: length of the number, if we put it 3 then we get: 
+# 001, 002, 003, 004, 005, etc. If we put it 4 the we get:
+# 0001, 0002, 0003, 0004, 0005, etc.
+#
+# Copyright (C) 2013  Abdelkrime Aries <kariminfo0@gmail.com>
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ext="."$1
+wide=$2
+
+#if the wide doesn't exist, we put 1 as default
+if [ -z "$2" ]; then 
+  echo "Length wasn't defined , using 1 as dfault"
+  wide=1
+fi
+
+if [ -z "$1" ]; then
+  echo "Extension wasn't defined, renaming all files in the folder"
+  ext=""
+fi
+
+#rename files by adding temp in the end to prevent any previously 
+#numeroted file
+temp="s/$ext$/temp$ext/"
+#echo $temp
+rename $temp *$ext
+
+#Begin numerotion from 1 and so on
+a=1
+for i in *$ext; do
+  mv "${i}" "$(printf "%0"$wide"d" ${a})$ext"
+  let a=a+1
+done
