@@ -1,0 +1,34 @@
+#!/bin/sh 
+
+# ***** Reduce Image Size
+# This script helps reducing image size by rreducing,
+# its quality to 80% 
+# Use: redimg <ext>
+# <ext>: The image extension, like png, jpg, etc.
+# default extension is jpg
+#
+# Copyright (C) 2013  Abdelkrime Aries <kariminfo0@gmail.com>
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ext=$1
+if [ -z "$1" ]; then 
+  echo "redimg <extension>, use jpg by default"
+  ext="jpg"
+fi
+mkdir reduce
+for img in *.$ext
+  do 
+    convert "$img" -quality 80 "reduce/$img"
+  done
