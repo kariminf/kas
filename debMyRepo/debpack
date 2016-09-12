@@ -1,0 +1,99 @@
+#!/bin/bash
+
+# ***** debpack
+# This script helps to create a local repository
+# Use: debdist <src-folder> <dest-folder>
+# <src-folder>: The folder where the deb files are. It must end with a "/"
+# <dest-folder>: The folder where we put the file "Packages". It must end with a "/"
+#
+# The script will create a file "Packages" and delete deplicate packages
+#
+# Copyright (C) 2016  Abdelkrime Aries <kariminfo0@gmail.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+#This is where repeated and temp files go
+TMP=~/pack-tmp/
+#This is the input folder where the packages are
+IN=""
+#This is the output file named "Packages"
+OUT=""
+
+#We must specify the location of packages foldder
+if [ -z "$1" ]
+then
+  echo "Specify the source folder"
+  exit
+fi
+
+IN=$1
+
+#It is preferable to specify the destination folder of the file "Packages"
+#If not, it will be stored in the TMP folder
+if [ -z "$2" ]
+then
+  OUT=${TMP}Packages
+else
+  OUT=${2}Packages
+fi
+
+#Create TMP folder and "del" folder inside it
+mkdir -p ${TMP}del/
+
+#Call "dpkg-scanpackages" on Input folder
+#The resulted file will be written in OUT file
+#The messages will be put in a file "del.pkg" in TMP folder
+dpkg-scanpackages $IN /dev/null 3>&1 1> $OUT 2>&3- | tee ${TMP}del.pkg
+
+i=0;
+#This is the pattern of ignored packages
+ignored=".*used that one and ignored data from ([^!]*)!"
+#This is the pattern of repeated packages
+repeated=".*\(filename ([^\)]*)\) is repeat;"
+
+# Function to move a given file in a line given a pattern
+# If the ligne matches the pattern, it returns match=1
+# else, it returns match=0
+moveit () {
+  match=0
+  #If the line matches the pattern
+  if [[ $1 =~ $2 ]]
+  then
+    name=${BASH_REMATCH[1]}
+    echo "Duplicate: $name"
+    mv $name ${TMP}del/
+    match=1
+  fi
+  return 0
+}
+
+#Read each line of del.pkg file stored in TMP folder
+while IFS= read -r line
+do
+
+  #Verify and Move the ignored files
+  moveit "$line" "$ignored"
+  #If the ligne matches the pattern continue to the next
+  if [[ $match -gt 0 ]]
+  then
+    continue
+  fi
+
+  #Verify and Move the repeated files
+  moveit "$line" "$repeated"
+
+done < ${TMP}del.pkg
+
+echo "For duplicated packages, Go to ${TMP}del/"
+
+echo "Packages specifications are in $OUT"
