@@ -2,7 +2,7 @@
 
 # ***** debpack
 # This script helps to create a local repository
-# Use: debdist <src-folder> <dest-folder>
+# Use: debpack <src-folder> <dest-folder>
 # <src-folder>: The folder where the deb files are. It must end with a "/"
 # <dest-folder>: The folder where we put the file "Packages". It must end with a "/"
 #
