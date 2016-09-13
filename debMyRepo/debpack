@@ -29,37 +29,73 @@ IN=""
 #This is the output file named "Packages"
 OUT=""
 
-#We must specify the location of packages foldder
-if [ -z "$1" ]
-then
-  echo "Specify the source folder"
-  exit
-fi
+main () {
+  #We must specify the location of packages foldder
+  if [ -z "$1" ]
+  then
+    echo "Specify the source folder"
+    echo ""
+    help
+    exit 0
+  fi
 
-IN=$1
+  if [ "$1" == "-h" ]; then
+    help
+    exit 0
+  fi
 
-#It is preferable to specify the destination folder of the file "Packages"
-#If not, it will be stored in the TMP folder
-if [ -z "$2" ]
-then
-  OUT=${TMP}Packages
-else
-  OUT=${2}Packages
-fi
+  IN=$1
 
-#Create TMP folder and "del" folder inside it
-mkdir -p ${TMP}del/
+  #It is preferable to specify the destination folder of the file "Packages"
+  #If not, it will be stored in the TMP folder
+  if [ -z "$2" ]
+  then
+    OUT=${TMP}Packages
+  else
+    OUT=${2}Packages
+  fi
 
-#Call "dpkg-scanpackages" on Input folder
-#The resulted file will be written in OUT file
-#The messages will be put in a file "del.pkg" in TMP folder
-dpkg-scanpackages $IN /dev/null 3>&1 1> $OUT 2>&3- | tee ${TMP}del.pkg
+  #Create TMP folder and "del" folder inside it
+  mkdir -p ${TMP}del/
 
-i=0;
-#This is the pattern of ignored packages
-ignored=".*used that one and ignored data from ([^!]*)!"
-#This is the pattern of repeated packages
-repeated=".*\(filename ([^\)]*)\) is repeat;"
+  #Call "dpkg-scanpackages" on Input folder
+  #The resulted file will be written in OUT file
+  #The messages will be put in a file "del.pkg" in TMP folder
+  dpkg-scanpackages $IN /dev/null 3>&1 1> $OUT 2>&3- | tee ${TMP}del.pkg
+
+  processDelFile
+
+  echo "For duplicated packages, Go to ${TMP}del/"
+
+  echo "Packages specifications are in $OUT"
+
+}
+
+processDelFile () {
+
+  #This is the pattern of ignored packages
+  ignored=".*used that one and ignored data from ([^!]*)!"
+  #This is the pattern of repeated packages
+  repeated=".*\(filename ([^\)]*)\) is repeat;"
+
+  #Read each line of del.pkg file stored in TMP folder
+  while IFS= read -r line
+  do
+
+    #Verify and Move the ignored files
+    moveit "$line" "$ignored"
+    #If the ligne matches the pattern continue to the next
+    if [[ $match -gt 0 ]]
+    then
+      continue
+    fi
+
+    #Verify and Move the repeated files
+    moveit "$line" "$repeated"
+
+  done < ${TMP}del.pkg
+
+}
 
 # Function to move a given file in a line given a pattern
 # If the ligne matches the pattern, it returns match=1
@@ -77,23 +113,19 @@ moveit () {
   return 0
 }
 
-#Read each line of del.pkg file stored in TMP folder
-while IFS= read -r line
-do
+help () {
+  # This script helps to create a local repository
+  # Use: debpack <src-folder> <dest-folder>
+  # <src-folder>: The folder where the deb files are. It must end with a "/"
+  # <dest-folder>: The folder where we put the file "Packages". It must end with a "/"
+  #
+  # The script will create a file "Packages" and delete deplicate packages
+  echo "This script helps to create a local repository"
+  echo "It will create a file \"Packages\" and delete deplicate packages"
+  echo ""
+  echo "Usage: debpack <src-folder> <dest-folder>"
+  echo "<src-folder>: The folder where the deb files are. It must end with a \"/\""
+  echo "<dest-folder>: The folder where we put the file \"Packages\". It must end with a \"/\""
+}
 
-  #Verify and Move the ignored files
-  moveit "$line" "$ignored"
-  #If the ligne matches the pattern continue to the next
-  if [[ $match -gt 0 ]]
-  then
-    continue
-  fi
-
-  #Verify and Move the repeated files
-  moveit "$line" "$repeated"
-
-done < ${TMP}del.pkg
-
-echo "For duplicated packages, Go to ${TMP}del/"
-
-echo "Packages specifications are in $OUT"
+main "$@"

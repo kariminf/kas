@@ -24,14 +24,52 @@
 # limitations under the License.
 #
 
-if [ -z "$1" ]
-then
-  echo "Specify the source folder"
-  exit
-fi
+main () {
+  if [ -z "$1" ]
+  then
+    echo "Specify the source folder"
+    echo ""
+    help
+    exit 0
+  fi
 
-mkdir -p $1others/
-mkdir -p $1main/
+  if [ "$1" == "-h" ]; then
+    help
+    exit 0
+  fi
+
+  mkdir -p $1others/
+  mkdir -p $1main/
+
+  # Looking for all .deb files in the folder
+  for deb in $1*.deb
+  do
+    #extract the name of the debian file without extension
+    debn=${deb##*/}
+    #destination "others"
+    to=$1others/
+    #test if the file came from getdeb
+    if [[ $debn =~ .*getdeb.*$ ]]
+    then
+      echo "getdeb: $deb"
+      distribute $deb $to
+      continue
+    fi
+
+    #test if the file came from webupd8
+    if [[ $debn =~ .*webupd8.*$ ]]
+    then
+      echo "webupd8: $deb"
+      distribute $deb $to
+      continue
+    fi
+
+    #Else considerit as main package
+    to=$1main/
+    distribute $deb $to
+
+  done
+}
 
 # Function to distribute the packages using their names
 distribute () {
@@ -65,31 +103,13 @@ distribute () {
 
 }
 
-# Looking for all .deb files in the folder
-for deb in $1*.deb
-do
-  #extract the name of the debian file without extension
-  debn=${deb##*/}
-  #destination "others"
-  to=$1others/
-  #test if the file came from getdeb
-  if [[ $debn =~ .*getdeb.*$ ]]
-  then
-    echo "getdeb: $deb"
-    distribute $deb $to
-    continue
-  fi
+help () {
+  echo "The script will create a folder \"others\" for packages coming "
+  echo "from \"getdeb\" and \"wenupd8\", and a folder for main packages."
+  echo "Inside each one, it will distribute the files using the first character then using the name"
+  echo ""
+  echo "Usage: debdist <folder>"
+  echo "<folder>: The folder where the deb files are. It must end with a \"/\""
+}
 
-  #test if the file came from webupd8
-  if [[ $debn =~ .*webupd8.*$ ]]
-  then
-    echo "webupd8: $deb"
-    distribute $deb $to
-    continue
-  fi
-
-  #Else considerit as main package
-  to=$1main/
-  distribute $deb $to
-
-done
+main "$@"
