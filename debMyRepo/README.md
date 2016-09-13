@@ -131,10 +131,25 @@ Then, update.
 You may see an error saying that your repo hasn't a "Release" file, ignore it.
 
 
-## Dependency
+## Dependencies
 This program depends on these packages:
 * bash
 * dpkg-dev: for "dpkg-scanpackages"
+
+## Download
+On ubuntu (or its derivatives), you can add the repository:
+```
+sudo add-apt-repository ppa:kariminf/ppa
+sudo apt-get update
+```
+Or add it manually:
+```
+deb http://ppa.launchpad.net/kariminf/ppa/ubuntu YOUR_UBUNTU_VERSION_HERE main
+```
+Update the cache, then install:
+```
+apt-get install debmyrepo
+```
 
 ## License
 The code is released under Apache 2.0 license.
