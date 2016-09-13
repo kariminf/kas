@@ -1,0 +1,3 @@
+debdist  usr/bin 
+debpack  usr/bin 
+

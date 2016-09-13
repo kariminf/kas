@@ -6,9 +6,10 @@ Abbreviation for Karim (me) Linux Scripts.
 It contains different bash scripts shared with whoever wants to learn or/and use them.
 
 ## [debMyRepo](./debMyRepo)
-[![Version](https://img.shields.io/badge/Version-1.0.0-green.svg)](https://launchpad.net/~kariminf/+archive/ubuntu/ppa)
+[![Version](https://img.shields.io/badge/Version-1.1.0-green.svg)](https://launchpad.net/~kariminf/+archive/ubuntu/ppa)
 
 This contains scripts to help you create a local .deb repository.
+Check this for more details: [debMyRepo](./debMyRepo)
 
 ## License
 The code is released under Apache 2.0 license.
