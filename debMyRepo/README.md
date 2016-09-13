@@ -148,7 +148,7 @@ deb http://ppa.launchpad.net/kariminf/ppa/ubuntu YOUR_UBUNTU_VERSION_HERE main
 ```
 Update the cache, then install:
 ```
-apt-get install debmyrepo
+sudo apt-get install debmyrepo
 ```
 
 ## License
