@@ -1,0 +1,115 @@
+#!/bin/bash
+
+# ***** debdist
+# This script helps to destibute debian files into subfolders
+# Use: debdist <folder>
+# <folder>: The folder where the deb files are.
+# It must end with a "/"
+# The script will create a folder "others" for packages coming from "getdeb" and "wenupd8"
+# and a folder for main packages.
+# Inside each one, it will distribute the files using the first character then using the name
+#
+# Copyright (C) 2016  Abdelkrime Aries <kariminfo0@gmail.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+main () {
+  if [ -z "$1" ]
+  then
+    echo "Specify the source folder"
+    echo ""
+    help
+    exit 0
+  fi
+
+  if [ "$1" == "-h" ]; then
+    help
+    exit 0
+  fi
+
+  mkdir -p $1others/
+  mkdir -p $1main/
+
+  # Looking for all .deb files in the folder
+  for deb in $1*.deb
+  do
+    #extract the name of the debian file without extension
+    debn=${deb##*/}
+    #destination "others"
+    to=$1others/
+    #test if the file came from getdeb
+    if [[ $debn =~ .*getdeb.*$ ]]
+    then
+      echo "getdeb: $deb"
+      distribute $deb $to
+      continue
+    fi
+
+    #test if the file came from webupd8
+    if [[ $debn =~ .*webupd8.*$ ]]
+    then
+      echo "webupd8: $deb"
+      distribute $deb $to
+      continue
+    fi
+
+    #Else considerit as main package
+    to=$1main/
+    distribute $deb $to
+
+  done
+}
+
+# Function to distribute the packages using their names
+distribute () {
+  deb=$1
+  to=$2
+  debn=${deb##*/}
+  if [[ $debn =~ ^libreoffice.*$ ]]
+  then
+    mkdir -p ${to}l/libreoffice
+    mv $deb ${to}l/libreoffice
+    return 0
+  fi
+
+  name=""
+  if [[ $debn =~ ^lib([^_]{2}[^-_]*)[-_].*$ ]]
+  then
+    name=${BASH_REMATCH[1]}
+  else
+    if [[ $debn =~ ^([^_]{2}[^-_]*)[-_].*$ ]]
+    then
+      name=${BASH_REMATCH[1]}
+    fi
+  fi
+
+  name=$( echo $name | tr 'A-Z' 'a-z' )
+  start=$( echo $name | cut -c 1-1 )
+  #echo $name
+  mkdir -p $to$start/$name
+  mv $1 $to$start/$name
+  echo "$1 moved to $to$start/$name"
+
+}
+
+help () {
+  echo "The script will create a folder \"others\" for packages coming "
+  echo "from \"getdeb\" and \"wenupd8\", and a folder for main packages."
+  echo "Inside each one, it will distribute the files using the first character then using the name"
+  echo ""
+  echo "Usage: debdist <folder>"
+  echo "<folder>: The folder where the deb files are. It must end with a \"/\""
+}
+
+main "$@"

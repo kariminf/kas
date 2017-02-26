@@ -1,0 +1,15 @@
+Source: debmyrepo
+Section: devel
+Priority: optional
+Maintainer: Abdelkrime Aries <kariminfo0@gmail.com>
+Build-Depends: debhelper (>=9)
+Standards-Version: 3.9.6
+Homepage: https://github.com/kariminf/KLnxScr
+#Vcs-Git: git://anonscm.debian.org/collab-maint/debmyrepo.git
+#Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/debmyrepo.git
+
+Package: debmyrepo
+Architecture: any
+Depends: bash (>=4), dpkg-dev (>=1.17)
+Description: This contains scripts to help you create a local .deb repository.
+

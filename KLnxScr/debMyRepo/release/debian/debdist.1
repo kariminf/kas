@@ -1,0 +1,30 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" (C) Copyright 2016 Abdelkrime Aries <kariminfo0@gmail.com>,
+
+.TH DEBDIST 1 "September 13 2016"
+
+.SH NAME
+debdist \- Distribute debian files.
+
+.SH SYNOPSIS
+.B debdist
+.RI "folder"
+
+.SH DESCRIPTION
+The script will create a folder "others" for packages coming 
+.br 
+from "getdeb" and "wenupd8", and a folder for main packages.
+.br 
+Inside each one, it will distribute the files using the first character then using the name.
+
+.SH OPTIONS
+.TP
+.B folder
+The folder where the deb files are. It must end with a "/"
+.TP
+.B \-h
+Show summary of options.
+
+.SH SEE ALSO
+.BR debpack (1).
+
