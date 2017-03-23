@@ -1,5 +1,5 @@
 # KAS
-[![Project](https://img.shields.io/badge/Project-KLnxScr-0BDA51.svg)](./)
+[![Project](https://img.shields.io/badge/Project-KAS-0BDA51.svg)](https://github.com/kariminf/KAS)
 [![License](https://img.shields.io/badge/License-Apache--2.0-0BDA51.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
 Abbreviation for Karim Aries (me) Scripts.
