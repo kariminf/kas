@@ -4,12 +4,12 @@
 # This script helps to destibute debian files into subfolders
 # Use: debdist <folder>
 # <folder>: The folder where the deb files are.
-# It must end with a "/"
+#
 # The script will create a folder "others" for packages coming from "getdeb" and "wenupd8"
 # and a folder for main packages.
 # Inside each one, it will distribute the files using the first character then using the name
 #
-# Copyright (C) 2016  Abdelkrime Aries <kariminfo0@gmail.com>
+# Copyright (C) 2016-2018  Abdelkrime Aries <kariminfo0@gmail.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,11 @@
 # limitations under the License.
 #
 
+# A set of componenets
+declare -A comp
+
 main () {
+
   if [ -z "$1" ]
   then
     echo "Specify the source folder"
@@ -38,37 +42,79 @@ main () {
     exit 0
   fi
 
-  mkdir -p $1others/
-  mkdir -p $1main/
+  folder=$1
+
+  if ! [[ $folder =~ ^.*/$ ]]
+  then
+    folder="$folder/"
+  fi
+
+  if [ ! -d "$folder" ]
+  then
+    echo "Folder $folder does not exist"
+    echo ""
+    help
+    exit 0
+  fi
+
+  getComponents $folder
+
+  createComponents $folder
 
   # Looking for all .deb files in the folder
-  for deb in $1*.deb
+  for deb in $folder*.deb
   do
-    #extract the name of the debian file without extension
-    debn=${deb##*/}
-    #destination "others"
-    to=$1others/
-    #test if the file came from getdeb
-    if [[ $debn =~ .*getdeb.*$ ]]
-    then
-      echo "getdeb: $deb"
-      distribute $deb $to
-      continue
-    fi
-
-    #test if the file came from webupd8
-    if [[ $debn =~ .*webupd8.*$ ]]
-    then
-      echo "webupd8: $deb"
-      distribute $deb $to
-      continue
-    fi
-
-    #Else considerit as main package
-    to=$1main/
-    distribute $deb $to
-
+    populateComponents $folder ${deb}
   done
+}
+
+getComponents () {
+
+  echo "components list exists"
+
+  [ -f "$1comp.list" ] || return 0
+
+  while IFS='' read -r line || [[ -n "$line" ]]; do
+    s=($line)
+    [ -n "${comp[${s[1]}]}" ] || declare -g -A ${s[1]}
+    comp[${s[1]}]=1
+    declare -n list="${s[1]}"
+    list[${s[0]}]=1
+  done < "$1comp.list"
+}
+
+createComponents () {
+  if ! [[ -f $1comp.list ]]
+  then
+    return
+  fi
+
+  for m in "${!comp[@]}"
+  do
+    mkdir -p "$1${m}/"
+  done
+  mkdir -p "$1main/"
+}
+
+populateComponents () {
+
+  debn=${2##*/}
+
+  for cmp in "${!comp[@]}"
+  do
+    declare -n list="${cmp}"
+    for match in "${!list[@]}"
+    do
+      if [[ $debn =~ .*${match}.*$ ]]
+      then
+        #echo "${cmp}: $2"
+        distribute $deb $1$cmp/
+        return 0
+      fi
+    done
+  done
+  #echo "main: $2"
+  distribute $deb $1main/
 }
 
 # Function to distribute the packages using their names
@@ -104,12 +150,14 @@ distribute () {
 }
 
 help () {
-  echo "The script will create a folder \"others\" for packages coming "
-  echo "from \"getdeb\" and \"wenupd8\", and a folder for main packages."
-  echo "Inside each one, it will distribute the files using the first character then using the name"
+  echo "The script will create a \"main\" component inside the specified folder."
+  echo "if a file named \"comp.list\" exists inside this folder."
+  echo "\"comp.list\" contains lines such as: <word> <component>."
+  echo "The packages with names containing the specified word will be sent to the component."
+  echo "Inside each component, it will distribute the files using the first character then using the name"
   echo ""
   echo "Usage: debdist <folder>"
-  echo "<folder>: The folder where the deb files are. It must end with a \"/\""
+  echo "<folder>: The folder where the deb files are."
 }
 
 main "$@"
