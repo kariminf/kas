@@ -1,7 +1,7 @@
 .\"                                      Hey, EMACS: -*- nroff -*-
-.\" (C) Copyright 2016 Abdelkrime Aries <kariminfo0@gmail.com>,
+.\" (C) Copyright 2016-2018 Abdelkrime Aries <kariminfo0@gmail.com>,
 
-.TH DEBDIST 1 "September 13 2016"
+.TH DEBDIST 1 "March 10 2018"
 
 .SH NAME
 debdist \- Distribute debian files.
@@ -11,20 +11,23 @@ debdist \- Distribute debian files.
 .RI "folder"
 
 .SH DESCRIPTION
-The script will create a folder "others" for packages coming 
-.br 
-from "getdeb" and "wenupd8", and a folder for main packages.
-.br 
-Inside each one, it will distribute the files using the first character then using the name.
+The script will create a "main" component inside the specified folder.
+.br
+if a file named "comp.list" exists inside this folder.
+.br
+"comp.list" contains lines such as: <word> <component>.
+.br
+The packages with names containing the specified word will be sent to the component.
+.br
+Inside each component, it will distribute the files using the first character then using the name.
 
 .SH OPTIONS
 .TP
 .B folder
-The folder where the deb files are. It must end with a "/"
+The folder where the deb files are. 
 .TP
 .B \-h
 Show summary of options.
 
 .SH SEE ALSO
 .BR debpack (1).
-
