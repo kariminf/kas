@@ -1,8 +1,9 @@
 debmyrepo (1.2.0-1~xenial) xenial; urgency=medium
 
   * debdist is more configurable
+  * debpack is more configurable
 
- -- Abdelkrime Aries <kariminfo0@gmail.com>  Sat, 10 Mar 2018 17:40:13 +0100
+ -- Abdelkrime Aries <kariminfo0@gmail.com>  Sat, 10 Mar 2018 20:22:13 +0100
 
 debmyrepo (1.1.0-2~xenial) xenial; urgency=medium
 
@@ -15,4 +16,3 @@ debmyrepo (1.0.0-2~xenial) xenial; urgency=medium
   * Initial release
 
  -- Abdelkrime Aries <kariminfo0@gmail.com>  Mon, 12 Sep 2016 23:02:26 +0100
- 

@@ -2,13 +2,13 @@
 
 # ***** debpack
 # This script helps to create a local repository
-# Use: debpack <src-folder> <dest-folder>
-# <src-folder>: The folder where the deb files are. It must end with a "/"
-# <dest-folder>: The folder where we put the file "Packages". It must end with a "/"
+# Use: debpack <repo-folder> <repo-name>
+# <dist-folder>: The folder where the deb files are.
+# <dist-name>: The name we want to use to refer the distribution
 #
 # The script will create a file "Packages" and delete deplicate packages
 #
-# Copyright (C) 2016  Abdelkrime Aries <kariminfo0@gmail.com>
+# Copyright (C) 2016-2018  Abdelkrime Aries <kariminfo0@gmail.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,54 +24,96 @@
 #
 #This is where repeated and temp files go
 TMP=~/pack-tmp/
-#This is the input folder where the packages are
-IN=""
-#This is the output file named "Packages"
-OUT=""
+ARCH="binary-amd64"
 
 main () {
+
+  if [ "$1" == "-h" ]
+  then
+    help
+    exit 0
+  fi
+
   #We must specify the location of packages foldder
   if [ -z "$1" ]
   then
-    echo "Specify the source folder"
+    echo "Specify the distribution folder"
     echo ""
     help
     exit 0
   fi
 
-  if [ "$1" == "-h" ]; then
+  if [ -z "$2" ]
+  then
+    echo "Specify the distribution name"
+    echo ""
     help
     exit 0
   fi
 
-  IN=$1
+  debsFolder=$1
 
-  #It is preferable to specify the destination folder of the file "Packages"
-  #If not, it will be stored in the TMP folder
-  if [ -z "$2" ]
+  if ! [[ $debsFolder =~ ^.*/$ ]]
   then
-    OUT=${TMP}Packages
-  else
-    OUT=${2}Packages
+    debsFolder="$debsFolder/"
   fi
+
+  distsFolder="dists/$2/"
 
   #Create TMP folder and "del" folder inside it
   mkdir -p ${TMP}del/
 
-  #Call "dpkg-scanpackages" on Input folder
-  #The resulted file will be written in OUT file
-  #The messages will be put in a file "del.pkg" in TMP folder
-  dpkg-scanpackages $IN /dev/null 3>&1 1> $OUT 2>&3- | tee ${TMP}del.pkg
+  comps=( $( find $debsFolder -mindepth 1 -maxdepth 1 -type d ) )
 
-  processDelFile
+  for comp in "${comps[@]}"
+  do
+    dest="$distsFolder${comp##*/}/$ARCH/"
+    echo "Processing component $comp"
+    processComponent $comp $dest
+  done
+
+  processRelease $distsFolder
 
   echo "For duplicated packages, Go to ${TMP}del/"
 
-  echo "Packages specifications are in $OUT"
+}
+
+processRelease () {
+
+  rm "$1Release" "$1InRelease"
+  apt-ftparchive release $1 > Release
+  gpg --clearsign -o InRelease Release
+
+  mv Release InRelease $1
 
 }
 
-processDelFile () {
+processComponent () {
+
+  src=$1
+  dest=$2
+
+  mkdir -p $dest
+
+  dest="$dest/Packages"
+
+  #Call "dpkg-scanpackages" on Input folder
+  #The resulted file will be written in OUT file
+  #The messages will be put in a file "del.pkg" in TMP folder
+  dpkg-scanpackages $src /dev/null 3>&1 1> $dest 2>&3- | tee ${TMP}del.pkg
+
+  if [ -s $dest ]
+  then
+    rm $dest
+  else
+    gzip -f $dest
+  fi
+
+  processDelFiles
+
+}
+
+processDelFiles () {
 
   #This is the pattern of ignored packages
   ignored=".*used that one and ignored data from ([^!]*)!"
@@ -95,6 +137,8 @@ processDelFile () {
 
   done < ${TMP}del.pkg
 
+  rm ${TMP}del.pkg
+
 }
 
 # Function to move a given file in a line given a pattern
@@ -114,18 +158,14 @@ moveit () {
 }
 
 help () {
-  # This script helps to create a local repository
-  # Use: debpack <src-folder> <dest-folder>
-  # <src-folder>: The folder where the deb files are. It must end with a "/"
-  # <dest-folder>: The folder where we put the file "Packages". It must end with a "/"
-  #
-  # The script will create a file "Packages" and delete deplicate packages
   echo "This script helps to create a local repository"
-  echo "It will create a file \"Packages\" and delete deplicate packages"
+  echo "It will create a repo in \"dists\" folder".
+  echo "This folder will contain the same components in \"<repo-folder>\" folder".
+  echo "Duplicate debian package will be sent to \"${TMP}del/\" folder".
   echo ""
-  echo "Usage: debpack <src-folder> <dest-folder>"
-  echo "<src-folder>: The folder where the deb files are. It must end with a \"/\""
-  echo "<dest-folder>: The folder where we put the file \"Packages\". It must end with a \"/\""
+  echo "Usage: debpack <repo-folder> <repo-name>"
+  echo "<dist-folder>: The folder where the deb files are."
+  echo "<dist-name>: The name we want to use to refer the distribution."
 }
 
 main "$@"

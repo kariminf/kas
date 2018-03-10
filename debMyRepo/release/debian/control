@@ -10,6 +10,5 @@ Homepage: https://github.com/kariminf/KLnxScr
 
 Package: debmyrepo
 Architecture: any
-Depends: bash (>=4), dpkg-dev (>=1.17)
+Depends: bash (>=4), dpkg-dev (>=1.17), apt-utils (>=1.2)
 Description: This contains scripts to help you create a local .deb repository.
-

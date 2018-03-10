@@ -8,27 +8,28 @@ debpack \- Creates Local repo.
 
 .SH SYNOPSIS
 .B debpack
-.RI "src-folder"
-.RI "dest-folder"
+.RI "dist-folder"
+.RI "dist-name"
 
 .SH DESCRIPTION
-The script will create a folder "others" for packages coming 
-.br 
-from "getdeb" and "wenupd8", and a folder for main packages.
-.br 
-Inside each one, it will distribute the files using the first character then using the name.
+This script helps to create a local repository.
+.br
+It will create a repo in "dists" folder.
+.br
+This folder will contain the same components in "<dist-folder>" folder.
+.br
+Duplicate debian package will be sent to "~/pack-tmp/del/" folder.
 
 .SH OPTIONS
 .TP
-.B src-folder
-The folder where the deb files are. It must end with a "/"
+.B dist-folder
+The folder where the deb files are.
 .TP
-.B dest-folder
-The folder where we put the file "Packages". It must end with a "/"
+.B dist-name
+The name we want to use to refer the distribution.
 .TP
 .B \-h
 Show summary of options.
 
 .SH SEE ALSO
 .BR debdist (1).
-
